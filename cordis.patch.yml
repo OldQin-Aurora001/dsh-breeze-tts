@@ -1,0 +1,4 @@
+# dsh-breeze-tts bundle: independent host/client registration.
+- insert:
+    - id: breeze-tts
+      name: 'dsh-breeze-tts'
