@@ -1,18 +1,47 @@
 {
   "name": "dsh-breeze-tts",
   "description": "Breeze TTS for DeepSeek Harness: AI auto-read (local runtime) plus voice workshop (design/clone/manage voices)",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "type": "module",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "main": "lib/index.mjs",
+  "icon": "icon.png",
+  "files": [
+    "lib/",
+    "README.md",
+    "README-AI.md",
+    "AI_SETUP.md",
+    "NOTICE.md",
+    "LICENSE",
+    "cordis.patch.yml",
+    "icon.png"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OldQin-Aurora001/dsh-breeze-tts.git"
+  },
+  "keywords": [
+    "dsh-plugin",
+    "tts",
+    "breeze",
+    "voice",
+    "speech",
+    "text-to-speech"
+  ],
   "exports": {
-    ".": { "default": "./lib/index.mjs" },
+    ".": {
+      "default": "./lib/index.mjs"
+    },
     "./client": "./lib/client.js",
     "./cordis.patch.yml": "./cordis.patch.yml",
     "./package.json": "./package.json"
   },
   "dsh": {
-    "bundle": { "patch": "./cordis.patch.yml" },
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
     "client": {
       "platform": "web",
       "inject": [
