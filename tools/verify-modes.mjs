@@ -11,12 +11,19 @@
 //   Windows 上若 DSH 由计划任务以 **SYSTEM** 账户运行 ⇒ 服务进程里 homedir = C:\Windows\System32\config\systemprofile，
 //   而人登录进来（普通账户）homedir = C:\Users\<用户名> ⇒ 读不到同一个 config.json ⇒ F8-5~11 静默跳过 = 假绿。
 //   ⇒ 优先读环境变量 DSH_BREEZE_TTS_CFG；未设时才回落 homedir（并打印实际用的路径，别让它是隐形的）。
-import { readFileSync, writeFileSync, existsSync, copyFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, renameSync, existsSync, copyFileSync } from 'node:fs';
 import os from 'node:os';
 
 const BASE = process.argv[2] || 'http://127.0.0.1:3104';
 const REMOTE = process.argv[3] || '';
 const CFG_FILE = process.env.DSH_BREEZE_TTS_CFG || (os.homedir() + '/.dsh/dsh-breeze-tts/config.json');
+// B-7②（方案 §四）：写 config 改原子写（tmp+rename）——写一半崩了不留半个 config.json
+// （rename 同盘原子；.tmp 后缀不会撞 042 的 BAN 检查，本脚本也不进发布包）
+function atomicWriteCfg(data) {
+  const tmp = CFG_FILE + '.tmp-' + process.pid;
+  writeFileSync(tmp, data);
+  renameSync(tmp, CFG_FILE);
+}
 const readTokenFromDisk = () => { try { return JSON.parse(readFileSync(CFG_FILE, 'utf8')).token || ''; } catch (_) { return ''; } };
 console.log('[cfg] ' + CFG_FILE + (process.env.DSH_BREEZE_TTS_CFG ? ' (from env DSH_BREEZE_TTS_CFG)' : ' (homedir guess)'));
 if (!existsSync(CFG_FILE)) console.log('[cfg] NOT FOUND - if service runs as SYSTEM, set DSH_BREEZE_TTS_CFG');
@@ -118,12 +125,12 @@ async function main() {
       try {
         const rawCfg = JSON.parse(cfgBackup || '{}');
         rawCfg.pairCode = '654321';
-        writeFileSync(CFG_FILE, JSON.stringify(rawCfg, null, 2));
+        atomicWriteCfg(JSON.stringify(rawCfg, null, 2));
         const px = await j(`${BASE}/dsh-breeze-tts-api/pair`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: '654321' }) });
         // ★ FA-2 后：/pair 从磁盘现读 ⇒ 写完不必重启即可兑换
         check('F8-11', '文件通道 pairCode 兑换 → 200 拿 token 且 config.json 字段已焚', px.status === 200 && px.body && px.body.token && !JSON.parse(readFileSync(CFG_FILE, 'utf8')).pairCode, px.status);
       } finally {
-        if (cfgBackup) { try { writeFileSync(CFG_FILE, cfgBackup); } catch (_) {} }
+        if (cfgBackup) { try { atomicWriteCfg(cfgBackup); } catch (_) {} }
       }
       // F8-12 爆破防护
       for (let i = 0; i < 5; i++) await j(`${BASE}/dsh-breeze-tts-api/pair`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: '111111' }) });

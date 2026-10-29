@@ -291,6 +291,7 @@ curl -s $API/config
 | `updatedAt` | 最后写入时间 |
 
 > `pairCode` **永远不会**出现在这个返回里（故意的，它是文件通道专用的）。
+> **pairCode 是一次性的**：兑换成功会被 host 自动从 config.json 删除；写了却一直没用（比如设备最终没接入）请手动删掉该字段，不要长期留在文件里。
 
 #### ② 写配置（局部 merge，不要整包覆盖）
 
@@ -511,7 +512,8 @@ curl -s -X POST $API/pair -H "Content-Type: application/json" -d "{\"code\":\"12
 - 连错 5 次该码作废；全局连错 3 次**锁 10 分钟**（`423`）
 - 也可以由人/你在 `config.json` 里手写 `pairCode`（文件通道），兑换后 host 会自动删字段
 
-> **本表列的是 AI 该用的 8 条主干。** 包内实际注册 **19 条**路由（含界面自用的 RVC、通知、诊断、装包等），
+> **本表列的是 AI 该用的 8 条主干。** 包内实际注册 **20 条**路由（含界面自用的 RVC、通知、诊断、装包等；
+> 1.2.0 新增 `POST /dsh-breeze-tts-api/base-audio`——基准音频上传落盘，client 专用，AI 不用管），
 > **别把"没列在这里"当成"不存在"**——要确认就用 `GET /dsh-breeze-tts-api/config` 或看启动日志。
 >
 > **其中最容易被漏掉的一条**：`/dsh-breeze-tts-api/local-runtime`（界面朗读/试听走的内部 RPC，POST，`level=write`）。
