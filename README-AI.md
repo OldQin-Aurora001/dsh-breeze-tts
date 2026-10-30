@@ -395,6 +395,8 @@ curl.exe -s -X POST http://127.0.0.1:8080/dsh-breeze-tts-api/speak-preview `
 字段：`input`（必填）、`voice`、`instructions`、`seed`、`cfg_scale`。
 成功 = wav 二进制（WAV 头已在 host 侧修好）；失败 = JSON `{error}`。
 
+> ⚠️ **文本字段名是 `input`**——凭直觉写成 `text` 会返回 400 `{"error":"empty input"}`（不是静默忽略，但也别以为是音色问题）。（N-3，2026-10-30）
+
 > **★ 为什么强调"修好"**：Breeze 服务**直接返回的 wav，头部长度字段是坏的**（`RIFF` 与 `data` 两处都写 `0xFFFFFFFF`）。
 > 从**插件**走的音频，host 已经用 `fixWavHost()` 补好了，是正常的。
 > 但如果你**绕过插件直接 `curl` 打 8080**，拿到的文件用 `wave` 读会算出**上万秒**的荒唐时长（实测某 2.40 秒的片段被算成 89478 秒）。
@@ -627,6 +629,8 @@ grep -i "breeze-tts" <DSH 启动日志>   # 首启会打印 "首启已建配置�
    - VPN 类（Tailscale / ZeroTier）**不会**伪装 loopback，不必开逃生门。
 4. **无 token 时不要把 DSH 端口暴露到公网。**
 5. **`trustedLocalCidrs` 加 IP = 把对方当本机**（免 token 且能拿到 token）。慎重。
+6. **音色包 registry / proxy 指向谁，host 就去连谁**——只填你信任的源（自建仓库在内网是常态，插件不拦主机）。
+7. **跨机使用音色包功能需先配对**（与保存设置同级）——浏览包列表与安装包同为 write 级操作，未配对的跨机请求会 401（弹配对框）。
 
 ### 禁止
 

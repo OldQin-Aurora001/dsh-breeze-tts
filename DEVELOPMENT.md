@@ -217,25 +217,25 @@ JSON + instructions(复数) → 153,644 B  ← 生效（时长约 3.2s vs 1.1s�
 
 ### 目录结构
 
-**插件运行本体 = 16 个文件**（除去四份说明文档）。整个包 20 个文件，无任何构建产物、无依赖目录、无备份垃圾。
+**插件运行本体 = 12 个文件**（lib/ 11 + tools/ 1，除去根上的说明文档）。工作目录 25 件；**发布包 18 件**（1.2.0 起 `package.json files` 白名单——tools/ 验收脚本与 HARDWARE/DEVELOPMENT 等开发文档不进发行包，走 GitHub 仓库；README-AI.md 是 AI 运行时文档，随包），无任何构建产物、无依赖目录、无备份垃圾。（C-20，2026-10-30 按 1.3.0 实测更新）
 
 ```
 dsh-breeze-tts/
-├── package.json          插件清单（包名/入口/DSH 挂载声明/peer 依赖）
+├── package.json          插件清单（包名/入口/DSH 挂载声明/peer 依赖/files 白名单）
 ├── cordis.patch.yml      DSH 装载入口（一个 insert，注册 bundle id）
 ├── LICENSE               MIT（含上游两家 MIT 原文，法律要求不能删）
 ├── NOTICE.md             来源、署名、许可
 ├── README.md             给人看：怎么用
-├── HARDWARE.md           硬件要求：跑不跑得动、走哪档（两版对照 + 查询命令 + AI 判定流程）
+├── HARDWARE.md           硬件要求：跑不跑得动、走哪档（两版对照 + 查询命令 + AI 判定流程）※不进发布包
 ├── README-AI.md          给 AI 看：怎么装怎么配
-├── DEVELOPMENT.md        本文：为什么这么设计
+├── DEVELOPMENT.md        本文：为什么这么设计 ※不进发布包
 ├── lib/
-│   ├── index.mjs         host 侧（2,101 行）：路由、配置存储、鉴权、Edge TTS、RVC、诊断
-│   ├── client.js         界面侧（5,771 行）：两个 tab 的面板、朗读播放器、工坊
+│   ├── index.mjs         host 侧（2,424 行）：路由、配置存储、鉴权、Edge TTS、RVC、诊断、base-audio 落盘
+│   ├── client.js         界面侧（6,115 行）：两个 tab 的面板、朗读播放器、工坊、通道开关、配对内联框
 │   ├── coexistence.mjs   原版共存检测（44 行）
-│   └── local-runtime/    本地运行时（1,163 行，8 个文件）
+│   └── local-runtime/    本地运行时（1,193 行，8 个文件）
 │       ├── service.mjs           路由入口与动作分发
-│       ├── provider.mjs          各引擎适配器（health/listVoices/synthesize）
+│       ├── provider.mjs          各引擎适配器（health/listVoices/synthesize，含进程树杀）
 │       ├── runtime-pool.mjs      适配器实例池
 │       ├── sentence-buffer.mjs   长文本分句与渐进播放
 │       ├── discovery.mjs         引擎发现
@@ -243,7 +243,7 @@ dsh-breeze-tts/
 │       ├── http-profile.mjs      HTTP 调用配置
 │       └── errors.mjs            错误码
 └── tools/
-    └── verify-modes.mjs  三档网络形态回归脚本（150 行）
+    └── verify-modes.mjs  三档网络形态回归脚本（157 行）※不进发布包
 ```
 
 ### 三条代码通道
